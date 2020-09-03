@@ -1,0 +1,6 @@
+{
+    "board": "arduino:avr:nano",
+    "configuration": "cpu=atmega168",
+    "sketch": "arduino/time.ino",
+    "port": "/dev/ttyUSB1"
+}
