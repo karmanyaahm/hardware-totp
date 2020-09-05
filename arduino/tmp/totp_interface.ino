@@ -5,7 +5,7 @@
 #include <Wire.h>
 
 // Google Authenticator uses 10-character private key and 30 second refresh
-uint8_t hmacKey[] = {0x6b, 0x33, 0x30, 0x61, 0x73, 0x76, 0x62, 0x36, 0x79, 0x64}; //base32 version
+byte hmacKey[] = {0x6b, 0x33, 0x30, 0x61, 0x73, 0x76, 0x62, 0x36, 0x79, 0x64}; //base32 version
 TOTP totp_gen = TOTP(hmacKey, 10, 30);
 char code[7];
 
@@ -15,6 +15,12 @@ char code[7];
 LedControl lc = LedControl(12, 11, 10, 1);
 DS3231 Clock;
 bool Century = false, h12, PM; // flags needed to use DS3231 library
+ long ts = getTimestamp();
+  char* newCode = totp_gen.getCode(ts);
+  if (strcmp(code, newCode) != 0) {
+    strcpy(code, newCode);
+    displayCode(code);
+  }
 
 void setup() {
   Wire.begin();
@@ -33,11 +39,7 @@ void loop() {
     strcpy(code, newCode);
     displayCode(code);
   }
-  int byte = 0;
-  if (Serial.available() > 0) {
-    byte = Serial.read();
-    Serial.write(code);
-  }
+
   
   delay(100);
 }

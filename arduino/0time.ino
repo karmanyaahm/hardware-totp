@@ -77,21 +77,3 @@ bool timer::isValid()
 }
 timer myTimer;
 
-void setup()
-{
-  Serial.begin(SERIAL_SPEED);
-
-  myTimer.init();
-  myTimer.setTime(1599179228);
-  
-  Serial.println("setup");
-}
-
-void loop()
-{
-  time_t now = myTimer.getTime();
-
-  Serial.println(now);
-
-  delay(1000);
-}
