@@ -1,3 +1,5 @@
+#include <EEPROM.h>
+
 #define BUTTON_PIN 2
 volatile bool pressed = false;
 
@@ -7,52 +9,32 @@ void press()
     pressed = true;
 }
 
-void setup()
+void eepromStore()
 {
+    EEPROM.put(0, myData.max);
+    Serial.println(myData.max);
 
-    pinMode(BUTTON_PIN, INPUT_PULLUP);
-    attachInterrupt(digitalPinToInterrupt(BUTTON_PIN), press, FALLING);
-    Serial.begin(SERIAL_SPEED);
-    while (!Serial)
+    for (int i = 0; (i < 15) && (i >= myData.max); i++)
     {
-        ;
+        EEPROM.put(16 + (40 * i), keys[i]);
     }
-
-    myTimer.init();
-    if (!myTimer.isValid())
-    {
-        myTimer.setTime(1599179228);
-    }
-    myScreen.init();
-    myData.init();
-    Serial.println("setup");
-
-    uint8_t newCode[] = {0x4d, 0x79, 0x4c, 0x65, 0x67, 0x6f, 0x44, 0x6f, 0x6f, 0x72};
-    char newName[] = "2344444";
-    myData.easyAdd(newCode, newName);
 }
+void eepromRead()
+{
+    // Serial.println("eep");
+    short int max;
+    EEPROM.get(0, max);
 
+    for (int i = 0; (i < 15) && (i <= max); i++)
+    {
+        Service serv;
+        EEPROM.get(16 + (40 * i), serv);
+        myData.easyAdd(serv.name, serv.code);
+        //     Serial.println(serv.name);
+        //     Serial.println((i >= myData.max));
+        //     Serial.println(myData.max);
+        //     Serial.println("==");
+    }
+    // Serial.println("eep");
+}
 char code[7];
-
-void loop()
-{
-    if (pressed)
-    {
-        myData.toScreen();
-        pressed = false;
-    }
-    long now = myTimer.getTime();
-    char *newCode = myData.getCode(now);
-
-    int interval = now % 30;
-    if (strcmp(code, newCode) != 0)
-    {
-        strcpy(code, newCode);
-        myScreen.homeScreen(myData.name, code);
-    }
-
-    myScreen.lineUpdate(interval);
-    //Serial.println((interval % 3) * 1000);
-    //delay(((interval % 3)) * 1000);
-    delay(500);
-}

@@ -67,8 +67,8 @@ unsigned long timer::getTime()
 }
 void timer::setTime(unsigned long t)
 {
-  now = (time_t)MIN_TIME;
-  Rtc.SetTime(&now);
+  now = (time_t)t;
+  Rtc.SetTime(&now );
   valid = true;
 }
 bool timer::isValid()

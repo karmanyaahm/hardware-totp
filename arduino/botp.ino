@@ -15,37 +15,22 @@ public:
     }
 };
 Service serv;
+Service keys[15];
 
 class data
 {
 private:
-    Service keys[15];
-    short int max = -1; //biggest that is defined
     byte currScreen = 0;
     TOTP totp = TOTP((byte *)serv.code, 10, 30);
 
 public:
-    Service *getKeys()
-    {
-        return keys;
-    }
+    short int max = -1; //biggest that is defined
     data() {}
-    data(Service k[])
-    {
-        for (int i = 0; i < 15; i++)
-        {
-            keys[i] = k[i];
-        }
-    }
 
     char *name;
     void init()
     {
-        uint8_t newCode[] = {0x4d, 0x79, 0x4c, 0x65, 0x67, 0x6f, 0x44, 0x6f, 0x6f, 0x72};
-        char newName[] = "test123";
-        Service neww;
-        neww.set(newName, newCode);
-        addKey(neww);
+
         toScreen(0);
     }
     int toScreen()
