@@ -14,7 +14,7 @@ void eepromStore()
     EEPROM.put(0, myData.max);
     Serial.println(myData.max);
 
-    for (int i = 0; (i < 15) && (i >= myData.max); i++)
+    for (int i = 0; (i < 15) && (i <= myData.max); i++)
     {
         EEPROM.put(16 + (40 * i), keys[i]);
     }

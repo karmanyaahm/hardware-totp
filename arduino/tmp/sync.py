@@ -1,4 +1,5 @@
 import time
+from time import sleep as delay
 from datetime import datetime
 from serial import Serial  # pySerial
 
@@ -8,12 +9,13 @@ baud = 9600
 TIME_HEADER = "T"
 GET_TIME_HEADER = "G"
 LIST_HEADER = "L"
+SAVE_HEADER = "S"
 
 
 def send_stuff(serial, payload):
     try:
         payload = payload.encode()
-    except TypeError:
+    except (TypeError, AttributeError):
         pass
 
     print("sent")
@@ -36,6 +38,10 @@ def get_time():
     send_stuff(s, GET_TIME_HEADER)
 
 
+def save_changes():
+    send_stuff(s, SAVE_HEADER)
+
+
 def get_services():
     send_stuff(s, LIST_HEADER)
     b = s.readline().decode().strip()
@@ -52,6 +58,18 @@ def readlines():
         print(i)
 
 
+def addSmth(name: str, code: bytes):
+    assert len(name) <= 10
+    assert len(code) <= 10
+    payload = "A" + name + ":" + code.decode().ljust(10, "\0").encode().hex()
+    payload = payload.encode()
+    send_stuff(s, payload)
+
+
+def remove(i: int):
+    send_stuff(s, ("R" + str(i - 1)).encode())
+
+
 s = Serial(port, baud, timeout=2)
 
 
@@ -60,7 +78,21 @@ def main():
     readlines()  # wait to initialize
 
     get_services()
+    delay(0.1)
+    remove(3)
+    delay(0.1)
+
+    get_services()
+    delay(0.1)
+
+    save_changes()
+    delay(0.1)
+
     readlines()
+    # addSmth("string", b"hellowo")
+    # readlines()
+    # get_services()
+    # save_changes()
 
 
 if __name__ == "__main__":

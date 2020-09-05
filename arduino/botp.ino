@@ -72,6 +72,14 @@ public:
     {
         return totp.getCode(now);
     }
+    void remove (int i)
+    {
+        for (i; i < max; i++)
+        {
+            keys[i] = keys[i + 1];
+        }
+        max--;
+    }
 };
 
 data myData;
