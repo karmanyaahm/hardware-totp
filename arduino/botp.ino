@@ -22,10 +22,11 @@ static Service keys[HOW_MANY_OTP];
 class data
 {
 private:
-    byte currScreen = 0;
     TOTP totp = TOTP((byte *)serv.code, serv.len, 30);
 
 public:
+    byte currScreen = 0;
+
     int8_t max = -1; //biggest that is defined
     data() {}
 
@@ -45,7 +46,6 @@ public:
     }
     uint8_t toScreen(uint8_t num)
     {
-        Serial.println(keys[currScreen].name);
 
         if (num > max)
             return -1;

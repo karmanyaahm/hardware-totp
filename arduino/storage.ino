@@ -1,14 +1,5 @@
 #include <EEPROM.h>
 
-const byte BUTTON_PIN = 2;
-volatile bool pressed = false;
-
-void press()
-{
-    Serial.println(F("press"));
-    pressed = true;
-}
-
 void eepromStore()
 {
     EEPROM.put(0, myData.max);

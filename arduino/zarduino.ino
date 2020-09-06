@@ -1,6 +1,41 @@
 
+#include <LowPower.h>
+
+const byte BUTTON_PIN = 2;
+volatile bool pressed = false;
+volatile bool justSlept = false;
+volatile unsigned long bounce;
+const uint8_t bounce_time = 150;
+
+volatile unsigned long lastPress;
+void press()
+{
+    if ((millis() - bounce) > bounce_time)
+    {
+
+        Serial.println(F("press"));
+
+        pressed = (true && (!justSlept));
+        bounce = millis();
+    }
+}
+
+void off()
+{
+    myScreen.off();
+    justSlept = true;
+    delay(50);
+    LowPower.powerDown(SLEEP_FOREVER, ADC_OFF, BOD_OFF);
+}
+
+void on()
+{
+    myScreen.homeScreen(myData.name, code);
+}
+
 void setup()
 {
+    ADCSRA = 0;
 
     pinMode(BUTTON_PIN, INPUT_PULLUP);
     attachInterrupt(digitalPinToInterrupt(BUTTON_PIN), press, FALLING);
@@ -26,24 +61,28 @@ void setup()
     eepromRead();
 
     myData.init();
-    Serial.println(sizeof(keys));
+    lastPress = myTimer.getTime();
     Serial.println(F("setup"));
-
-    Serial.println(sizeof(myData));
-    Serial.println(sizeof(myTimer));
 }
 
 void loop()
 {
+    unsigned long now = myTimer.getTime();
+
     if (pressed)
     {
         myData.toScreen();
         pressed = false;
+        lastPress = now;
     }
-    unsigned long now = myTimer.getTime();
+    else if (justSlept)
+    {
+        on();
+        justSlept = false;
+        lastPress = now;
+    }
     char newCode[6];
     myData.getCode(newCode, now);
-    //Serial.println(newCode);
 
     uint8_t interval = now % 30;
 
@@ -51,14 +90,16 @@ void loop()
     {
         strcpy(code, newCode);
         myScreen.homeScreen(myData.name, code);
-        Serial.println(code);
     }
 
     myScreen.lineUpdate(interval);
-    delay((interval * 1000) % 500);
     delay(1000);
     if (Serial.available())
     {
         processSyncMessage();
+    }
+    if (now - lastPress > SLEEP_THRESHOLD)
+    {
+        off();
     }
 }
