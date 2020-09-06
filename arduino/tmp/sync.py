@@ -10,6 +10,8 @@ TIME_HEADER = "T"
 GET_TIME_HEADER = "G"
 LIST_HEADER = "L"
 SAVE_HEADER = "S"
+DONE_HEADER = "O"
+READY_HEADER = "setup"
 
 
 def send_stuff(serial, payload):
@@ -35,6 +37,7 @@ def send_time():
 
 
 def get_time():
+    print(int(time.time()))
     send_stuff(s, GET_TIME_HEADER)
 
 
@@ -53,42 +56,70 @@ def get_services():
 
 
 def readlines():
-    o = [a.decode().strip() for a in s.readlines()]
-    for i in o:
-        print(i)
+    o = ""
+    while DONE_HEADER not in o:
+        o = [a.decode().strip() for a in s.readlines()]
+        for i in o:
+            print(i)
 
 
-def addSmth(name: str, code: bytes):
+def addSmth(name: str, code: bytes, l: int = 10):
     assert len(name) <= 10
     assert len(code) <= 10
-    payload = "A" + name + ":" + code.decode().ljust(10, "\0").encode().hex()
+    payload = "A" + name + ":" + (b"\0" * (l - len(code)) + code).hex()
     payload = payload.encode()
     send_stuff(s, payload)
+
+
+def wait_begin():
+    o = ""
+    while READY_HEADER not in o:
+        o = []
+        for a in s.readlines():
+            try:
+                o.append( a.decode().strip())
+            except UnicodeDecodeError:
+                pass
+        for i in o:
+            print(i)
 
 
 def remove(i: int):
     send_stuff(s, ("R" + str(i - 1)).encode())
 
 
+def reset():
+    remove(-69 + 1)
+    readlines()
+    addSmth("Timeis", b"default")
+
+
 s = Serial(port, baud, timeout=2)
+import base64
 
 
 def main():
-
-    readlines()  # wait to initialize
-
-    get_services()
-    delay(0.1)
-    remove(3)
-    delay(0.1)
-
-    get_services()
-    delay(0.1)
-
-    save_changes()
-    delay(0.1)
-
+    reset()
     readlines()
+    addSmth("TingTest", base64.b32decode("KT7D6UTLYKSNPIWV"), 10)
+    readlines()
+    readlines()
+    # save_changes()
+    # readlines()
+    # send_time()
+    # readlines()
+    # get_time()
+    # readlines()
+    # # delay(0.1)
+    # print(base64.b32decode("KT7D6UTLYKSNPIWV").hex())
+    # # remove(3)
+
+    # get_services()
+    # readlines()
+
+    # save_changes()
+
+    # readlines()
     # addSmth("string", b"hellowo")
     # readlines()
     # get_services()
@@ -96,4 +127,5 @@ def main():
 
 
 if __name__ == "__main__":
+    wait_begin()
     main()

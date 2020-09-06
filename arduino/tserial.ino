@@ -8,73 +8,18 @@ const char SAVE_HEADER = 'S';
 const char OUT_SEPERATOR = ';';
 const char IN_SEPERATOR = ':';
 
-void setup()
-{
-
-    pinMode(BUTTON_PIN, INPUT_PULLUP);
-    attachInterrupt(digitalPinToInterrupt(BUTTON_PIN), press, FALLING);
-    Serial.begin(SERIAL_SPEED);
-    while (!Serial)
-    {
-        ;
-    }
-
-    myTimer.init();
-    if (!myTimer.isValid())
-    {
-        myTimer.setTime(1599179228);
-    }
-    myScreen.init();
-    Serial.println("setup");
-
-    // uint8_t newCode[] = {0x4d, 0x79, 0x4c, 0x65, 0x67, 0x6f, 0x44, 0x6f, 0x6f, 0x72};
-    // char newName[] = "2344444";
-    // myData.easyAdd(newName, newCode);
-    // myData.easyAdd(newCode, newName);
-
-    // eepromStore();
-    eepromRead();
-
-    myData.init();
-}
-void loop()
-{
-    if (pressed)
-    {
-        myData.toScreen();
-        pressed = false;
-    }
-    long now = myTimer.getTime();
-    char *newCode = myData.getCode(now);
-
-    int interval = now % 30;
-    if (strcmp(code, newCode) != 0)
-    {
-        strcpy(code, newCode);
-        myScreen.homeScreen(myData.name, code);
-    }
-
-    myScreen.lineUpdate(interval);
-    delay((interval * 1000) % 500);
-    delay(300);
-    if (Serial.available())
-    {
-        processSyncMessage();
-    }
-}
 void processSyncMessage()
 {
-    unsigned long pctime;
-    const unsigned long DEFAULT_TIME = 1357041600; // Jan 1 2013
+
     char b = char(Serial.read());
     if (b == TIME_HEADER)
     {
+        unsigned long pctime;
         pctime = Serial.parseInt();
         if (pctime >= MIN_TIME)
         { // check the integer is a valid time (greater than Jan 1 2013)
             myTimer.setTime(pctime);
             delay(300);
-            Serial.println(myTimer.getTime());
         }
     }
     else if (b == GET_TIME_HEADER)
@@ -98,12 +43,21 @@ void processSyncMessage()
     }
     else if (b == REMOVE_HEADER)
     {
-        myData.remove(Serial.parseInt());
+        int a = Serial.parseInt();
+        if (a == -69)
+        {
+
+            myData = data();
+        }
+        else
+        {
+            myData.remove(a);
+        }
     }
     else if (b == ADD_HEADER)
     {
         char newName[10];
-        int a = Serial.readBytesUntil(IN_SEPERATOR, newName, 15);
+        int a = Serial.readBytesUntil(IN_SEPERATOR, newName, 12);
         newName[a] = '\0';
 
         char hex[20];
@@ -115,6 +69,7 @@ void processSyncMessage()
         {
             newCode[i] = newCodePoint[i];
         }
+        Serial.println(freeRam());
 
         myData.easyAdd(newName, newCode);
     }

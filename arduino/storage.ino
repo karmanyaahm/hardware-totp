@@ -1,11 +1,11 @@
 #include <EEPROM.h>
 
-#define BUTTON_PIN 2
+const byte BUTTON_PIN = 2;
 volatile bool pressed = false;
 
 void press()
 {
-    Serial.println("press");
+    Serial.println(F("press"));
     pressed = true;
 }
 
@@ -14,7 +14,7 @@ void eepromStore()
     EEPROM.put(0, myData.max);
     Serial.println(myData.max);
 
-    for (int i = 0; (i < 15) && (i <= myData.max); i++)
+    for (int i = 0; (i < HOW_MANY_OTP) && (i <= myData.max); i++)
     {
         EEPROM.put(16 + (40 * i), keys[i]);
     }
@@ -25,7 +25,7 @@ void eepromRead()
     short int max;
     EEPROM.get(0, max);
 
-    for (int i = 0; (i < 15) && (i <= max); i++)
+    for (int i = 0; (i < HOW_MANY_OTP) && (i <= max); i++)
     {
         Service serv;
         EEPROM.get(16 + (40 * i), serv);

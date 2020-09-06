@@ -29,7 +29,6 @@ timer::timer()
 
 void timer::init()
 {
-  Serial.println("1");
   if (!Rtc.GetIsRunning())
   {
     //if rtc not running
@@ -49,11 +48,9 @@ void timer::init()
   now = (time_t)Rtc.GetTime();
   Serial.println(now);
   delay(300);
-  Serial.println("1");
 
   Rtc.Enable32kHzPin(false);
   Rtc.SetSquareWavePin(DS3231SquareWavePin_ModeNone);
-  Serial.println("1");
 }
 unsigned long timer::getTime()
 {

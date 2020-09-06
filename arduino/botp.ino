@@ -4,7 +4,7 @@ class Service
 {
 public:
     char name[11] = "          ";
-    uint8_t code[10] = {0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0};
+    uint8_t code[11] = {0x0, 0xC, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0};
     void set(char newName[], uint8_t newCode[])
     {
         strncpy(name, newName, sizeof(name) - 1);
@@ -15,7 +15,7 @@ public:
     }
 };
 Service serv;
-Service keys[15];
+static Service keys[HOW_MANY_OTP];
 
 class data
 {
@@ -24,7 +24,7 @@ private:
     TOTP totp = TOTP((byte *)serv.code, 10, 30);
 
 public:
-    short int max = -1; //biggest that is defined
+    int8_t max = -1; //biggest that is defined
     data() {}
 
     char *name;
@@ -49,6 +49,22 @@ public:
         currScreen = num;
         Service *tmp = &(keys[currScreen]);
         totp = TOTP(tmp->code, 10, 30);
+        char const hex_chars[16] = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F'};
+
+        for (int i = 0; i < 10; ++i)
+        {
+            char const byte = (tmp->code)[i];
+
+            Serial.print(hex_chars[(byte & 0xF0) >> 4]);
+            Serial.print(hex_chars[(byte & 0x0F) >> 0]);
+        }
+        for (int i = 0; i < 10; ++i)
+        {
+            char const byte = keys[1].code[i];
+
+            Serial.print(hex_chars[(byte & 0xF0) >> 4]);
+            Serial.print(hex_chars[(byte & 0x0F) >> 0]);
+        }
         name = tmp->name;
         Serial.println(name);
 
@@ -56,7 +72,7 @@ public:
     }
     int addKey(Service s)
     {
-        if (max >= 15)
+        if (max >= HOW_MANY_OTP)
             return -1;
         max++;
         keys[max].set(s.name, s.code);
@@ -68,11 +84,22 @@ public:
         neww.set(newName, newCode);
         addKey(neww);
     }
-    char *getCode(long now)
+    void getCode(char *buf, unsigned long now)
     {
-        return totp.getCode(now);
+        if (currScreen == 0)
+        {
+            uint8_t hour = (now % 86400) / 3600;
+            uint8_t minute = (now % 3600) / 60;
+            sprintf(buf, "%02d:%02d ", hour, minute);
+            //Serial.println(buf);
+        }
+        else
+        {
+            char *t = totp.getCode(now);
+            strcpy(buf, t);
+        }
     }
-    void remove (int i)
+    void remove(int i)
     {
         for (i; i < max; i++)
         {

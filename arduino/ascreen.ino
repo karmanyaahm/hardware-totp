@@ -1,5 +1,4 @@
 
-#include <SPI.h>
 #include <Wire.h>
 #include <Adafruit_GFX.h>
 #include <Adafruit_SSD1306.h>
@@ -16,7 +15,7 @@ private:
 public:
     screen(){};
     void init();
-    void homeScreen(String str, char *code);
+    void homeScreen(char str[], char *code);
     void lineUpdate(double interval);
     void off();
 };
@@ -28,7 +27,8 @@ void screen::init()
         for (;;)
             ; // Don't proceed, loop forever
     }
-    homeScreen("homescreen", (char *)"homescreen");
+    const char text[5] = "home\0";
+    homeScreen(text, (char *)text);
     delay(500);
 }
 void screen::off()
@@ -36,7 +36,7 @@ void screen::off()
     display.clearDisplay();
     display.display();
 }
-void screen ::homeScreen(String str, char *code)
+void screen ::homeScreen(char str[], char *code)
 {
     display.clearDisplay();
     display.setCursor(0, 0);
