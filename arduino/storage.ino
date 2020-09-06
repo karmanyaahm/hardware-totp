@@ -14,7 +14,7 @@ void eepromStore()
     EEPROM.put(0, myData.max);
     Serial.println(myData.max);
 
-    for (int i = 0; (i < HOW_MANY_OTP) && (i <= myData.max); i++)
+    for (uint8_t i = 0; (i < HOW_MANY_OTP) && (i <= myData.max); i++)
     {
         EEPROM.put(16 + (40 * i), keys[i]);
     }
@@ -22,14 +22,14 @@ void eepromStore()
 void eepromRead()
 {
     // Serial.println("eep");
-    short int max;
+    int8_t max;
     EEPROM.get(0, max);
 
-    for (int i = 0; (i < HOW_MANY_OTP) && (i <= max); i++)
+    for (uint8_t i = 0; (i < HOW_MANY_OTP) && (i <= max); i++)
     {
         Service serv;
         EEPROM.get(16 + (40 * i), serv);
-        myData.easyAdd(serv.name, serv.code);
+        myData.easyAdd(serv.name, serv.code, serv.len);
         //     Serial.println(serv.name);
         //     Serial.println((i >= myData.max));
         //     Serial.println(myData.max);

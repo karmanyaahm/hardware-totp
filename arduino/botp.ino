@@ -3,12 +3,14 @@
 class Service
 {
 public:
-    char name[11] = "          ";
-    uint8_t code[11] = {0x0, 0xC, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0};
-    void set(char newName[], uint8_t newCode[])
+    char name[11] = "          \0";
+    uint8_t code[MAX_CODE_SIZE] = {0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0};
+    uint8_t len = 1;
+    void set(char newName[], uint8_t newCode[], uint8_t lent)
     {
         strncpy(name, newName, sizeof(name) - 1);
         strncpy(code, newCode, sizeof(code));
+        len = lent;
     }
     Service()
     {
@@ -21,7 +23,7 @@ class data
 {
 private:
     byte currScreen = 0;
-    TOTP totp = TOTP((byte *)serv.code, 10, 30);
+    TOTP totp = TOTP((byte *)serv.code, serv.len, 30);
 
 public:
     int8_t max = -1; //biggest that is defined
@@ -33,14 +35,15 @@ public:
 
         toScreen(0);
     }
-    int toScreen()
+    uint8_t toScreen()
     {
         // next screen if no argument
         currScreen++;
         currScreen %= max + 1;
-        toScreen(currScreen);
+        return toScreen(currScreen);
+
     }
-    int toScreen(int num)
+    uint8_t toScreen(uint8_t num)
     {
         Serial.println(keys[currScreen].name);
 
@@ -48,40 +51,34 @@ public:
             return -1;
         currScreen = num;
         Service *tmp = &(keys[currScreen]);
-        totp = TOTP(tmp->code, 10, 30);
-        char const hex_chars[16] = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F'};
+        totp = TOTP((*tmp).code, (*tmp).len, 30);
 
-        for (int i = 0; i < 10; ++i)
-        {
-            char const byte = (tmp->code)[i];
+        // char const hex_chars[16] = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F'};
 
-            Serial.print(hex_chars[(byte & 0xF0) >> 4]);
-            Serial.print(hex_chars[(byte & 0x0F) >> 0]);
-        }
-        for (int i = 0; i < 10; ++i)
-        {
-            char const byte = keys[1].code[i];
+        // for (uint8_t i = 0; i < (*tmp).len; ++i)
+        // {
+        //     char const byte = ((*tmp).code)[i];
 
-            Serial.print(hex_chars[(byte & 0xF0) >> 4]);
-            Serial.print(hex_chars[(byte & 0x0F) >> 0]);
-        }
-        name = tmp->name;
+        //     Serial.print(hex_chars[(byte & 0xF0) >> 4]);
+        //     Serial.print(hex_chars[(byte & 0x0F) >> 0]);
+        // }
+        name = (*tmp).name;
         Serial.println(name);
-
         return currScreen;
     }
-    int addKey(Service s)
+    uint8_t addKey(Service s)
     {
         if (max >= HOW_MANY_OTP)
             return -1;
         max++;
-        keys[max].set(s.name, s.code);
+        keys[max].set(s.name, s.code, s.len);
+        return max;
     }
-    void easyAdd(char newName[], uint8_t newCode[])
+    void easyAdd(char newName[], uint8_t newCode[], uint8_t len)
     {
 
         Service neww;
-        neww.set(newName, newCode);
+        neww.set(newName, newCode, len);
         addKey(neww);
     }
     void getCode(char *buf, unsigned long now)
@@ -99,7 +96,7 @@ public:
             strcpy(buf, t);
         }
     }
-    void remove(int i)
+    void remove(uint8_t i)
     {
         for (i; i < max; i++)
         {

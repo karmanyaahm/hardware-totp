@@ -28,7 +28,7 @@ void processSyncMessage()
     }
     else if (b == LIST_HEADER)
     {
-        for (int i = 0; i <= myData.max; i++)
+        for (uint8_t i = 0; i <= myData.max; i++)
         {
             if (i > 0)
                 Serial.print(";");
@@ -43,7 +43,7 @@ void processSyncMessage()
     }
     else if (b == REMOVE_HEADER)
     {
-        int a = Serial.parseInt();
+        int8_t a = Serial.parseInt();
         if (a == -69)
         {
 
@@ -56,22 +56,19 @@ void processSyncMessage()
     }
     else if (b == ADD_HEADER)
     {
-        char newName[10];
-        int a = Serial.readBytesUntil(IN_SEPERATOR, newName, 12);
+        uint8_t len = Serial.parseInt(SKIP_NONE);
+        Serial.read();
+        char newName[len];
+
+        uint8_t a = Serial.readBytesUntil(IN_SEPERATOR, newName, len + 2);
         newName[a] = '\0';
 
-        char hex[20];
-        Serial.readBytes(hex, 20);
+        char hex[len * 2];
+        Serial.readBytes(hex, len * 2);
+        uint8_t newCode[len];
+        strToHex(newCode, hex, len);
 
-        uint8_t newCode[10];
-        uint8_t *newCodePoint = strToHex(hex);
-        for (int i = 0; i < 10; i++)
-        {
-            newCode[i] = newCodePoint[i];
-        }
-        Serial.println(freeRam());
-
-        myData.easyAdd(newName, newCode);
+        myData.easyAdd(newName, newCode, len);
     }
     else
     {
@@ -87,15 +84,14 @@ void serialFlush()
         char t = Serial.read();
     }
 }
-uint8_t *strToHex(char str[])
+void strToHex(uint8_t *arr, char str[], uint8_t len)
 {
-    uint8_t ret[10];
     char part[3];
-    for (int i = 0; i < 20; i += 2)
+    for (uint8_t i = 0; i < len * 2; i += 2)
     {
         part[0] = str[i];
         part[1] = str[i + 1];
         part[2] = 0; /* Add terminator */
-        ret[i / 2] = strtol(part, NULL, 16);
+        arr[i / 2] = strtol(part, NULL, 16);
     }
 }

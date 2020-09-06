@@ -25,14 +25,14 @@ def send_stuff(serial, payload):
     print(payload)
 
 
-def send_time():
+def send_time(off):
 
     s.read()  # read sync signal
 
     # attempt to set as close to on the second as possible
     now = time.time()
     time.sleep(now - int(now))
-    payload = TIME_HEADER + str(int(now))
+    payload = TIME_HEADER + str(int(now+off))
     send_stuff(s, payload)
 
 
@@ -64,9 +64,9 @@ def readlines():
 
 
 def addSmth(name: str, code: bytes, l: int = 10):
-    assert len(name) <= 10
-    assert len(code) <= 10
-    payload = "A" + name + ":" + (b"\0" * (l - len(code)) + code).hex()
+    assert len(name) <= l
+    assert len(code) <= l
+    payload = "A" + str(l) + ":" + name + ":" + (b"\0" * (l - len(code)) + code).hex()
     payload = payload.encode()
     send_stuff(s, payload)
 
@@ -77,7 +77,7 @@ def wait_begin():
         o = []
         for a in s.readlines():
             try:
-                o.append( a.decode().strip())
+                o.append(a.decode().strip())
             except UnicodeDecodeError:
                 pass
         for i in o:
@@ -91,7 +91,7 @@ def remove(i: int):
 def reset():
     remove(-69 + 1)
     readlines()
-    addSmth("Timeis", b"default")
+    addSmth("UTC Time", b"default")
 
 
 s = Serial(port, baud, timeout=2)
@@ -99,11 +99,22 @@ import base64
 
 
 def main():
-    reset()
+    send_time(1)
     readlines()
-    addSmth("TingTest", base64.b32decode("KT7D6UTLYKSNPIWV"), 10)
-    readlines()
-    readlines()
+    # reset()
+    # readlines()
+    # addSmth("TingTest", base64.b32decode("KT7D6UTLYKSNPIWV"), 10)
+    # readlines()
+    # code = base64.b32decode("MY3WM5RTJJWDGS2EGJCFQ6CZMZJWWK3P".upper())
+    # addSmth("OldFF", code, len(code))
+    # readlines()
+    # save_changes()
+    # readlines()
+    #readlines()
+    # get_services()
+    # readlines()
+
+    # save_changes()
     # save_changes()
     # readlines()
     # send_time()

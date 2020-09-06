@@ -1,5 +1,4 @@
 
-#include <Wire.h>
 #include <Adafruit_GFX.h>
 #include <Adafruit_SSD1306.h>
 #define SCREEN_WIDTH 128 // OLED display width, in pixels
@@ -16,7 +15,7 @@ public:
     screen(){};
     void init();
     void homeScreen(char str[], char *code);
-    void lineUpdate(double interval);
+    void lineUpdate(uint8_t interval);
     void off();
 };
 void screen::init()
@@ -48,10 +47,10 @@ void screen ::homeScreen(char str[], char *code)
     display.println(code);
     display.display();
 }
-void screen ::lineUpdate(double interval)
+void screen ::lineUpdate(uint8_t interval)
 {
     display.drawFastHLine(0, display.height() - 1, (display.width() - 1), SSD1306_BLACK);
-    display.drawFastHLine(0, display.height() - 1, (1 - (interval / 30)) * (display.width() - 1), SSD1306_WHITE);
+    display.drawFastHLine(0, display.height() - 1, (1 - (((float)interval) / 30)) * (display.width() - 1), SSD1306_WHITE);
     display.display();
 }
 screen myScreen;
